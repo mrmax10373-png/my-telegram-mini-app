@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>said.chess</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<style>
+:root{--bg:#070908;--card:#101512;--gr:#1f8a5b;--gr2:#3ddc97;--pk:#ff5ca8;--wh:#f4f1e8;--mut:#8b968f}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(circle at 50% -10%,#143324,var(--bg) 62%) fixed;color:var(--wh);font-family:Georgia,'Times New Roman',serif;min-height:100vh;padding:env(safe-area-inset-top) 14px 24px;user-select:none}
+.s{display:none;max-width:480px;margin:0 auto;padding-top:16px}.s.on{display:block}
+h1{font-size:38px;text-align:center;letter-spacing:1px;font-weight:normal}h1 i{color:var(--pk);font-style:normal}h1 b{color:var(--gr2);font-weight:normal}
+.logo{text-align:center;font-size:76px;line-height:1.1;text-shadow:0 0 28px var(--gr)}
+.sub{text-align:center;color:var(--mut);font-style:italic;margin:6px 0 20px}
+.btn{display:block;width:100%;padding:15px 16px;margin:10px 0;border:1px solid var(--gr);border-radius:12px;background:linear-gradient(180deg,#16211b,var(--card));color:var(--wh);font:inherit;font-size:19px;text-align:left}
+.btn small{display:block;color:var(--mut);font-size:13px;margin-top:3px}
+.btn:active{border-color:var(--pk)}.btn.p{background:var(--gr);border-color:var(--gr2);text-align:center}.btn.k{border-color:var(--pk);color:var(--pk);text-align:center}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.top h2{flex:1;font-size:21px;font-weight:normal;text-align:center}
+.sm{padding:9px 13px;border-radius:10px;border:1px solid var(--gr);background:var(--card);color:var(--wh);font:inherit;font-size:15px}.sm.k{border-color:var(--pk);color:var(--pk)}
+#bd{display:grid;grid-template:repeat(8,1fr)/repeat(8,1fr);width:100%;aspect-ratio:1;border:3px solid var(--gr);border-radius:6px;overflow:hidden;box-shadow:0 0 30px #1f8a5b55}
+.q{display:flex;align-items:center;justify-content:center;font-size:min(9.5vw,44px);position:relative;line-height:1}
+.l{background:#eceee2}.d{background:#2f8a62}
+.q.lm{box-shadow:inset 0 0 0 100px #ff5ca860}.q.sel{box-shadow:inset 0 0 0 100px #ffe45c80}.q.chk{box-shadow:inset 0 0 0 100px #e0224499}.q.hint{box-shadow:inset 0 0 0 100px #ff5ca8bb;animation:pl 1s infinite}
+.q.mv::after{content:'';position:absolute;width:30%;height:30%;border-radius:50%;background:#07090866}.q.mv.cp::after{width:88%;height:88%;background:none;border:4px solid #07090866}
+@keyframes pl{50%{opacity:.5}}
+.w{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 1px 3px #000}.b{color:#14181a;text-shadow:0 0 1px #fff}
+#st{margin:12px 0 0}
+.tb{display:none;margin-top:10px;padding:14px;border:1px solid var(--pk);border-radius:12px;background:#1a1117;line-height:1.45}
+.tb .btn{margin:12px 0 0;text-align:center}
+.bar{height:5px;background:#26302a;border-radius:3px;margin-top:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gr2),var(--pk))}
+#mo{display:none;position:fixed;inset:0;background:#000c;align-items:center;justify-content:center;padding:20px;z-index:9}#mo.on{display:flex}
+.mc{background:var(--card);border:1px solid var(--pk);border-radius:16px;padding:22px;width:100%;max-width:380px;text-align:center}.mc h2{font-weight:normal;margin-bottom:6px}.mc p{color:var(--mut);margin:6px 0}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid #1d2420}
+.bg{font-style:normal;font-size:13px;padding:2px 11px;border-radius:20px}.ba{background:var(--gr2);color:#000}.bt{background:var(--wh);color:#000}.bg2{background:#ff5ca844;color:var(--pk)}.bx{background:var(--pk);color:#000}
+.sum{text-align:center}.sum b{font-size:56px;font-weight:normal;color:var(--gr2)}.sum span{display:block;color:var(--mut)}
+</style></head><body>
+
+<div class="s on" id="mn">
+  <div class="logo">♞</div><h1>said<i>.</i><b>chess</b></h1><p class="sub">Klassik shaxmat, yangicha ruhda</p>
+  <button class="btn" onclick="show('lv')">Bot bilan o'ynash<small>Darajani tanlang va o'ynang</small></button>
+  <button class="btn" onclick="online()">Online o'ynash<small>Haqiqiy o'yinchilar bilan yoki taklif orqali</small></button>
+  <button class="btn" onclick="lessons()">Darslar<small>10 ta dars: shaxmatni noldan o'rganing</small></button>
+  <button class="btn" onclick="about()">Dastur haqida</button>
+</div>
+
+<div class="s" id="lv">
+  <div class="top"><button class="sm" onclick="show('mn')">← Orqaga</button><h2>Daraja tanlang</h2></div>
+  <button class="btn" onclick="newBot(0)">Oson<small>Yangi boshlovchilar uchun, bot xato qiladi</small></button>
+  <button class="btn" onclick="newBot(1)">O'rta<small>Bot 2 yurish oldinga hisoblaydi</small></button>
+  <button class="btn" onclick="newBot(2)">Qiyin<small>Bot 3 yurish oldinga hisoblaydi</small></button>
+</div>
+
+<div class="s" id="gm">
+  <div class="top"><button class="sm" id="un" onclick="undo()">↶ Orqaga</button><h2 id="gt"></h2><button class="sm k" onclick="quit()">Tugatish</button></div>
+  <div id="bd"></div><p class="sub" id="st"></p><div class="tb" id="tb"></div>
+</div>
+
+<div class="s" id="ls">
+  <div class="top"><button class="sm" onclick="show('mn')">← Menu</button><h2>Darslar</h2></div><div id="ll"></div>
+</div>
+
+<div class="s" id="ol">
+  <div class="top"><button class="sm" onclick="leaveOl()">← Orqaga</button><h2>Online o'yin</h2></div>
+  <button class="btn" onclick="findOpp()">Tasodifiy raqib<small>Hozir onlayn o'yinchi bilan juftlashish</small></button>
+  <button class="btn" onclick="invite()">Do'stni taklif qilish<small>Havola yuboring, do'stingiz kirgach o'yin boshlanadi</small></button>
+  <div id="olm" class="sub"></div>
+</div>
+
+<div class="s" id="an">
+  <div class="top"><button class="sm" onclick="menu()">← Menu</button><h2>O'yin tahlili</h2></div><div id="al"></div>
+</div>
+
+<div id="mo"></div>
+
+<script>
+const tg=window.Telegram&&Telegram.WebApp;
+if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#070908');tg.setBackgroundColor('#070908')}catch(e){}}
+const $=id=>document.getElementById(id);
+const GL={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const G={g:null,mode:'',my:'w',sel:null,hint:null,lv:1,busy:false,over:false,les:0,step:0,ws:null};
+let P={};try{P=JSON.parse(localStorage.getItem('sc')||'{}')}catch(e){}
+const sv=()=>{try{localStorage.setItem('sc',JSON.stringify(P))}catch(e){}};
+const sq=(i,j)=>'abcdefgh'[j]+(8-i);
+function show(id){document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id===id));scrollTo(0,0)}
+function modal(h){$('mo').innerHTML='<div class="mc">'+h+'</div>';$('mo').classList.add('on')}
+function closeM(){$('mo').classList.remove('on')}
+function menu(){closeM();show('mn')}
+function about(){modal('<h2>said.chess</h2><p>O\'yin Said Corporation tomonidan ishlab chiqarilgan</p><p>Dastur versiyasi 1.1</p><button class="btn k" onclick="closeM()">Yopish</button>')}
+
+/* ---------- Dvigatel (alpha-beta) ---------- */
+const V={p:100,n:320,b:330,r:500,q:900,k:0};
+function ev(g){let s=0;g.board().forEach((r,i)=>r.forEach((c,j)=>{if(!c)return;
+  let v=V[c.type];
+  if(c.type==='p')v+=(c.color==='w'?6-i:i-1)*5;
+  else if(c.type!=='k')v+=10-3*Math.max(Math.abs(3.5-i),Math.abs(3.5-j));
+  s+=c.color==='w'?v:-v}));return s}
+function nm(g,d,a,b){
+  if(g.in_checkmate())return -99999-d;
+  if(g.in_draw()||g.in_stalemate())return 0;
+  if(d===0)return (g.turn()==='w'?1:-1)*ev(g);
+  const ms=g.moves({verbose:true}).sort((x,y)=>(y.captured?1:0)-(x.captured?1:0));
+  for(const m of ms){g.move(m);const s=-nm(g,d-1,-b,-a);g.undo();if(s>a){a=s;if(a>=b)break}}
+  return a}
+function analyze(hist,my){
+  const g=new Chess(),out=[];
+  for(const m of hist){
+    if(m.color===my){
+      let best=-1e9,pl=0;
+      for(const x of g.moves({verbose:true})){
+        g.move(x);const s=-nm(g,1,-1e9,1e9);g.undo();
+        if(s>best)best=s;
+        if(x.from===m.from&&x.to===m.to&&x.promotion===m.promotion)pl=s}
+      out.push({san:m.san,loss:best-pl})}
+    g.move({from:m.from,to:m.to,promotion:m.promotion||'q'})}
+  return out}
+
+/* ---------- Doska ---------- */
+function render(){
+  const g=G.g,fl=G.my==='b',sel=G.sel,mvs={};
+  if(sel)g.moves({square:sel,verbose:true}).forEach(m=>mvs[m.to]=1);
+  const hs=g.history({verbose:true}),lm=hs[hs.length-1];
+  let kc=null;
+  if(g.in_check())g.board().forEach((r,i)=>r.forEach((c,j)=>{if(c&&c.type==='k'&&c.color===g.turn())kc=sq(i,j)}));
+  let h='';
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    const i=fl?7-r:r,j=fl?7-f:f,s=sq(i,j),c=g.get(s);
+    let cl='q '+((i+j)%2?'d':'l');
+    if(lm&&(lm.from===s||lm.to===s))cl+=' lm';
+    if(s===sel)cl+=' sel';
+    if(s===kc)cl+=' chk';
+    if(mvs[s])cl+=' mv'+(c?' cp':'');
+    if(G.hint&&(s===G.hint[0]||s===G.hint[1]))cl+=' hint';
+    h+=`<div class="${cl}" onclick="tap('${s}')">${c?`<span class="${c.color}">${GL[c.type]}\uFE0E</span>`:''}</div>`}
+  $('bd').innerHTML=h}
+
+function st(){
+  const g=G.g;if(G.mode==='les')return;
+  let t=g.in_check()?'Shox! ':'';
+  t+=G.busy?"Bot o'ylamoqda…":g.turn()===G.my?'Sizning yurishingiz':G.mode==='online'?'Raqib yuradi…':'';
+  $('st').textContent=t}
+
+function tap(s){
+  if(G.over||G.busy||!G.g||G.g.turn()!==G.my)return;
+  const g=G.g,c=g.get(s);
+  if(G.sel&&g.moves({square:G.sel,verbose:true}).some(m=>m.to===s))return play(G.sel,s);
+  G.sel=c&&c.color===G.my?s:null;render()}
+
+function play(f,t){
+  G.sel=null;
+  if(G.mode==='online'){send({t:'move',from:f,to:t});return}
+  if(!G.g.move({from:f,to:t,promotion:'q'}))return;
+  render();
+  if(G.mode==='les')return lessonMove(f,t);
+  after()}
+
+/* ---------- Bot bilan o'yin ---------- */
+function newBot(lv){
+  G.lv=lv;G.mode='bot';G.my='w';G.g=new Chess();G.over=G.busy=false;G.sel=null;G.hint=null;
+  $('gt').textContent=["Oson","O'rta","Qiyin"][lv]+' daraja';
+  $('tb').style.display='none';$('un').style.display='';show('gm');render();st()}
+
+function after(){
+  const g=G.g;
+  if(g.game_over()){
+    const mate=g.in_checkmate();
+    return fin(mate?(g.turn()==='w'?'b':'w'):'d',mate?'Mat':'Durang')}
+  if(G.mode==='bot'&&g.turn()!==G.my){G.busy=true;st();setTimeout(botMove,450)}else st()}
+
+function botMove(){
+  const g=G.g,ms=g.moves({verbose:true});if(!ms.length)return;
+  const d=G.lv+1,noise=[70,18,2][G.lv];let best=null,bs=-1e9;
+  if(G.lv===0&&Math.random()<.35)best=ms[Math.random()*ms.length|0];
+  else for(const m of ms.sort(()=>Math.random()-.5)){
+    g.move(m);const s=-nm(g,d-1,-1e9,1e9)+Math.random()*noise;g.undo();
+    if(s>bs){bs=s;best=m}}
+  g.move({from:best.from,to:best.to,promotion:best.promotion||'q'});
+  G.busy=false;render();after()}
+
+function undo(){
+  if(G.mode!=='bot'||G.busy||G.over)return;
+  const g=G.g;if(!g.history().length)return;
+  g.undo();if(g.turn()!==G.my&&g.history().length)g.undo();
+  G.sel=null;render();st()}
+
+function quit(){
+  if(G.mode==='online'&&!G.over)send({t:'resign'});
+  G.over=true;
+  if(G.mode==='online'&&G.ws){G.ws.close();G.ws=null}
+  G.mode==='les'?lessons():menu()}
+
+function fin(res,why){
+  G.over=true;G.busy=false;st();
+  const t=res==='d'?'Durang':res===G.my?'Siz yutdingiz!':'Siz yutqazdingiz';
+  modal(`<h2>${t}</h2><p>${why}</p><button class="btn p" onclick="analysis()">O'yinni tahlil qilish</button><button class="btn" onclick="menu()">Asosiy menu</button>`)}
+
+function analysis(){
+  closeM();show('an');$('al').innerHTML='<p class="sub">Tahlil qilinmoqda…</p>';
+  setTimeout(()=>{
+    const r=analyze(G.g.history({verbose:true}),G.my),cnt={a:0,t:0,g:0,x:0};
+    const L=l=>l<=15?["A'lo",'a','ba']:l<=60?["To'g'ri",'t','bt']:l<=200?["G'alati",'g','bg2']:['Xato','x','bx'];
+    let h='';
+    r.forEach((x,i)=>{const [n,c,k]=L(x.loss);cnt[c]++;h+=`<div class="row"><span>${i+1}. ${x.san}</span><em class="bg ${k}">${n}</em></div>`});
+    const acc=r.length?Math.round(100*(cnt.a+cnt.t)/r.length):0;
+    $('al').innerHTML=`<div class="sum"><b>${acc}%</b><span>aniqlik</span></div><p class="sub">A'lo ${cnt.a} · To'g'ri ${cnt.t} · G'alati ${cnt.g} · Xato ${cnt.x}</p>`+(h||'<p class="sub">Yurishlar yo\'q</p>')},60)}
+
+/* ---------- Darslar ---------- */
+const LS=[
+["Qirol","4k3/8/8/8/8/8/8/4K3 w - - 0 1",[["e1","e2","Qirol eng muhim dona: u har tomonga 1 katak yuradi."],["e1","d2","Qirol qiyshiq ham yuradi."],["e1","f1","Yon tomonga ham 1 katak."]]],
+["Farzin","4k3/8/8/8/8/8/8/3QK3 w - - 0 1",[["d1","d5","Farzin eng kuchli dona: to'g'ri chiziq bo'ylab istagancha yuradi."],["d1","h5","Qiyshiq chiziq bo'ylab ham yuradi."],["d1","a4","Yana bir qiyshiq yo'nalish."]]],
+["Rux","4k3/8/8/8/8/8/8/R3K3 w - - 0 1",[["a1","a5","Rux faqat to'g'ri yuradi: yuqoriga."],["a1","d1","Yon tomonga ham yuradi."]]],
+["Fil","4k3/8/8/8/8/8/8/2B1K3 w - - 0 1",[["c1","g5","Fil faqat qiyshiq yuradi."],["c1","a3","Boshqa qiyshiq yo'nalish."]]],
+["Ot","4k3/8/8/8/8/8/8/1N2K3 w - - 0 1",[["b1","c3","Ot 'G' harfi shaklida yuradi va boshqa donalar ustidan sakray oladi."],["b1","a3","Ot uchun yana bir variant."],["b1","d2","Va yana bittasi."]]],
+["Piyoda","4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",[["e2","e3","Piyoda oldinga 1 katak yuradi."],["e2","e4","Birinchi yurishda 2 katak ham mumkin."]]],
+["Olish","4k3/8/8/p2p4/8/8/8/R2RK3 w - - 0 1",[["a1","a5","Dona raqib donasi turgan katakka yursa, uni oladi."],["d1","d5","Yana bir donani oling."]]],
+["Shox","4k3/8/8/8/8/8/8/R3K2R w - - 0 1",[["a1","a8","Qirolga hujum qilish shox deyiladi. Raqib uni darrov qutqarishi kerak."],["h1","h8","Shox berishning yana bir yo'li."]]],
+["Mat","6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1",[["a1","a8","Mat: qirol shoxdan qutula olmaydi va o'yin tugaydi."]]],
+["Rokirovka","4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1",[["e1","g1","Rokirovka: qirol 2 katak yuradi, rux uning yoniga o'tadi."],["e1","c1","Uzun rokirovka ham shunday, faqat boshqa tomonga."]]]
+];
+
+function lessons(){
+  closeM();show('ls');
+  $('ll').innerHTML=LS.map((l,i)=>{
+    const p=Math.round(100*Math.min(P[i]||0,l[2].length)/l[2].length);
+    return `<button class="btn" onclick="openL(${i})">${i+1}. ${l[0]}<small>${p}% o'rganildi</small><div class="bar"><i style="width:${p}%"></i></div></button>`}).join('')
+   +`<button class="btn p" onclick="online()">Keyingi qadam: Online o'ynash</button>`}
+
+function openL(i){
+  G.mode='les';G.my='w';G.les=i;G.step=(P[i]||0)>=LS[i][2].length?0:(P[i]||0);
+  $('un').style.display='none';$('st').textContent='';show('gm');loadStep()}
+
+function loadStep(){
+  const L=LS[G.les],s=L[2][G.step];
+  G.g=new Chess(L[1]);G.over=G.busy=false;G.sel=null;G.hint=[s[0],s[1]];
+  $('gt').textContent=`${G.les+1}-dars: ${L[0]}`;
+  say(`<b>Ustoz:</b> ${s[2]}<br>Mana bu yerga yuring: <b>${s[0]} → ${s[1]}</b>`);render()}
+
+function say(h){const t=$('tb');t.innerHTML=h;t.style.display='block'}
+
+function lessonMove(f,t){
+  const L=LS[G.les],s=L[2][G.step];
+  if(f!==s[0]||t!==s[1]){
+    G.g.undo();render();
+    return say(`<b>Ustoz:</b> Bu kerakli yurish emas. Qayta urinib ko'ring: <b>${s[0]} → ${s[1]}</b>.`)}
+  G.step++;P[G.les]=Math.max(P[G.les]||0,G.step);sv();G.hint=null;G.busy=true;render();
+  const done=G.step>=L[2].length,pct=Math.round(100*G.step/L[2].length);
+  const last=G.les===LS.length-1;
+  say(`<b>Ustoz:</b> Zo'r! Dars ${pct}% o'rganildi.`+(done
+    ?`<button class="btn p" onclick="${last?'online()':`openL(${G.les+1})`}">${last?"Keyingi qadam: Online o'ynash":'Keyingi dars'}</button><button class="btn" onclick="lessons()">Darslar ro'yxati</button>`
+    :`<button class="btn p" onclick="G.step=${G.step};loadStep()">Keyingi qadam</button>`))}
+
+/* ---------- Online ---------- */
+const send=o=>G.ws&&G.ws.readyState===1&&G.ws.send(JSON.stringify(o));
+function online(){closeM();$('olm').textContent='';show('ol')}
+function leaveOl(){if(G.ws){G.over=true;G.ws.close();G.ws=null}menu()}
+function conn(cb){
+  if(G.ws&&G.ws.readyState===1)return cb();
+  const w=G.ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+  w.onopen=()=>{send({t:'hello',name:(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name)||'Mehmon'});cb()};
+  w.onmessage=e=>onmsg(JSON.parse(e.data));
+  w.onerror=()=>{$('olm').textContent="Serverga ulanib bo'lmadi"};
+  w.onclose=()=>{if(G.mode==='online'&&!G.over){G.over=true;modal(`<h2>Aloqa uzildi</h2><button class="btn" onclick="menu()">Asosiy menu</button>`)}}}
+function findOpp(){G.over=false;$('olm').textContent='Raqib qidirilmoqda…';conn(()=>send({t:'queue'}))}
+function invite(){G.over=false;$('olm').textContent='Havola tayyorlanmoqda…';conn(()=>send({t:'create'}))}
+function share(l){
+  const u='https://t.me/share/url?url='+encodeURIComponent(l)+'&text='+encodeURIComponent("said.chess da men bilan shaxmat o'ynang!");
+  tg?tg.openTelegramLink(u):open(u)}
+function onmsg(m){
+  if(m.t==='created'){$('olm').innerHTML=`Do'stingiz havolani ochgach o'yin boshlanadi.<button class="btn p" onclick="share('${m.link}')">Havolani yuborish</button>`}
+  if(m.t==='err')$('olm').textContent=m.msg;
+  if(m.t==='start'){
+    G.mode='online';G.my=m.color;G.g=new Chess();G.over=G.busy=false;G.sel=null;G.hint=null;
+    closeM();$('gt').textContent='vs '+m.opp;$('tb').style.display='none';$('un').style.display='none';
+    show('gm');render();st()}
+  if(m.t==='move'&&G.g){G.g.move({from:m.from,to:m.to,promotion:m.promotion||'q'});G.sel=null;render();st()}
+  if(m.t==='bad'){G.sel=null;render()}
+  if(m.t==='over')fin(m.res,m.why)}
+
+/* Taklif havolasi orqali kirish */
+const rm=new URLSearchParams(location.search).get('room');
+if(rm){show('ol');$('olm').textContent="Taklifga ulanilmoqda…";conn(()=>send({t:'join',code:rm}))}
+</script></body></html>
