@@ -1,0 +1,14 @@
+{
+  "name": "said-chess",
+  "version": "1.1.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "chess.js": "0.13.4",
+    "express": "^4.19.2",
+    "telegraf": "^4.16.3",
+    "ws": "^8.18.0"
+  }
+}
